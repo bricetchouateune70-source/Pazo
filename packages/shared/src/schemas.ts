@@ -14,6 +14,18 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Passwort erforderlich'),
 });
 
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben').optional(),
+  phone: z.string().nullable().optional(),
+  street: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Aktuelles Passwort erforderlich'),
+  newPassword: z.string().min(8, 'Neues Passwort muss mindestens 8 Zeichen haben'),
+});
+
 // ================= User Schemas =================
 
 export const userSchema = z.object({

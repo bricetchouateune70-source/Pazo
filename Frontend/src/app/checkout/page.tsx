@@ -4,26 +4,65 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
-import { apiPost } from '@/lib/api';
+import { apiPost, apiGet } from '@/lib/api';
 import { toast } from '@/components/ui/Toaster';
-import { MapPin, Store, Loader2 } from 'lucide-react';
+import { MapPin, Store, Loader2, Home } from 'lucide-react';
 import { DeliveryMethod } from '@pazo/shared';
 import { setCurrentOrderId } from '@/lib/session';
 import { sanitizeOrderText } from '@/lib/security';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  street: string | null;
+  city: string | null;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, total, clearCart } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(DeliveryMethod.PICKUP);
-  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryStreet, setDeliveryStreet] = useState('');
+  const [deliveryCity, setDeliveryCity] = useState('');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch user profile and pre-fill address
+  useEffect(() => {
+    async function fetchUserProfile() {
+      if (!isAuthenticated || profileLoaded) return;
+      
+      try {
+        const response = await apiGet<{ success: boolean; data: UserProfile }>('/api/auth/me');
+        const profile = response.data;
+        
+        // Pre-fill address if user has saved address
+        if (profile.street) {
+          setDeliveryStreet(profile.street);
+        }
+        if (profile.city) {
+          setDeliveryCity(profile.city);
+        }
+        setProfileLoaded(true);
+      } catch (error) {
+        // Ignore error, user can still enter address manually
+        setProfileLoaded(true);
+      }
+    }
+
+    if (mounted && isAuthenticated) {
+      fetchUserProfile();
+    }
+  }, [mounted, isAuthenticated, profileLoaded]);
 
   useEffect(() => {
     if (mounted && !isAuthenticated) {
@@ -51,14 +90,19 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (deliveryMethod === DeliveryMethod.DELIVERY && !deliveryAddress.trim()) {
-      toast.error('Bitte gib eine Lieferadresse ein');
+    if (deliveryMethod === DeliveryMethod.DELIVERY && (!deliveryStreet.trim() || !deliveryCity.trim())) {
+      toast.error('Bitte gib eine vollständige Lieferadresse ein');
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Combine street and city for delivery address
+      const fullAddress = deliveryMethod === DeliveryMethod.DELIVERY 
+        ? `${sanitizeOrderText(deliveryStreet)}, ${sanitizeOrderText(deliveryCity)}`
+        : undefined;
+
       // Sanitize user input before sending to backend
       const orderData = {
         items: items.map((item) => ({
@@ -66,9 +110,7 @@ export default function CheckoutPage() {
           quantity: item.quantity,
         })),
         deliveryMethod,
-        deliveryAddress: deliveryMethod === DeliveryMethod.DELIVERY 
-          ? sanitizeOrderText(deliveryAddress) 
-          : undefined,
+        deliveryAddress: fullAddress,
         notes: sanitizeOrderText(notes) || undefined,
       };
 
@@ -142,13 +184,36 @@ export default function CheckoutPage() {
             {deliveryMethod === DeliveryMethod.DELIVERY && (
               <div className="card p-6">
                 <h2 className="text-xl font-semibold mb-4">Lieferadresse</h2>
-                <textarea
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className="input min-h-[100px]"
-                  placeholder="Straße, Hausnummer, PLZ, Ort"
-                  required
-                />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <Home className="w-4 h-4 inline mr-2" />
+                      Straße und Hausnummer *
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryStreet}
+                      onChange={(e) => setDeliveryStreet(e.target.value)}
+                      className="input"
+                      placeholder="z.B. Musterstraße 123"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <MapPin className="w-4 h-4 inline mr-2" />
+                      PLZ und Stadt *
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryCity}
+                      onChange={(e) => setDeliveryCity(e.target.value)}
+                      className="input"
+                      placeholder="z.B. 12345 Musterstadt"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
             )}
 

@@ -140,7 +140,7 @@ export class OrderController {
         deliveryMethod: data.deliveryMethod as DeliveryMethod,
         // Sanitize user input - allows special chars like <h1>Te"s't</h1>
         // Prisma handles SQL injection protection with parameterized queries
-        address: sanitizeAddress(data.deliveryAddress),
+        deliveryAddress: sanitizeAddress(data.deliveryAddress),
         notes: sanitizeOrderNotes(data.notes),
         total,
       });
@@ -200,7 +200,7 @@ export class OrderController {
         userId: req.user!.userId, // Bäcker als User
         items: orderItems,
         deliveryMethod: DeliveryMethod.PICKUP,
-        address: null,
+        deliveryAddress: null,
         notes: orderNotes,
         total,
       });

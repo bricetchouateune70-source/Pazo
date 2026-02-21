@@ -1,14 +1,23 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Toaster } from '@/components/ui/Toaster';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#da291c',
+};
 
 export const metadata: Metadata = {
   title: 'Pazo - Bestell-App',
-  description: 'Bestelle dein Essen schnell und einfach',
+  description: 'Bestelle dein Essen schnell und einfach bei Pazo. Frische Zutaten, schnelle Lieferung.',
+  keywords: ['Essen bestellen', 'Lieferservice', 'Pizza', 'Restaurant'],
+  authors: [{ name: 'Pazo' }],
+  robots: 'index, follow',
 };
 
 export default function RootLayout({

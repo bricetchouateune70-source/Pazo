@@ -8,7 +8,7 @@ import {
   getRefreshTokenExpiresAt 
 } from '../lib/jwt.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { registerSchema, loginSchema } from '@pazo/shared';
+import { registerSchema, loginSchema, updateProfileSchema, changePasswordSchema } from '@pazo/shared';
 
 // Cookie Optionen
 const cookieOptions = {
@@ -245,7 +245,8 @@ export class AuthController {
           name: true,
           role: true,
           phone: true,
-          address: true,
+          street: true,
+          city: true,
           createdAt: true,
         },
       });
@@ -257,6 +258,77 @@ export class AuthController {
       res.json({
         success: true,
         data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PATCH /api/auth/profile - Profil aktualisieren
+  static async updateProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = updateProfileSchema.parse(req.body);
+
+      const user = await prisma.user.update({
+        where: { id: req.user!.userId },
+        data: {
+          name: data.name,
+          phone: data.phone,
+          street: data.street,
+          city: data.city,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          phone: true,
+          street: true,
+          city: true,
+          createdAt: true,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: user,
+        message: 'Profil erfolgreich aktualisiert',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PATCH /api/auth/password - Passwort ändern
+  static async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = changePasswordSchema.parse(req.body);
+
+      // Aktuellen User laden
+      const user = await prisma.user.findUnique({
+        where: { id: req.user!.userId },
+      });
+
+      if (!user) {
+        throw new AppError(404, 'User nicht gefunden');
+      }
+
+      // Aktuelles Passwort prüfen
+      const validPassword = await argon2.verify(user.passwordHash, data.currentPassword);
+      if (!validPassword) {
+        throw new AppError(401, 'Aktuelles Passwort ist falsch');
+      }
+
+      // Neues Passwort hashen und speichern
+      const newPasswordHash = await argon2.hash(data.newPassword);
+      await prisma.user.update({
+        where: { id: req.user!.userId },
+        data: { passwordHash: newPasswordHash },
+      });
+
+      res.json({
+        success: true,
+        message: 'Passwort erfolgreich geändert',
       });
     } catch (error) {
       next(error);

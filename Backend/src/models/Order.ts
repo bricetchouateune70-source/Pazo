@@ -12,7 +12,7 @@ export interface OrderCreateInput {
   userId: string;
   items: OrderItemInput[];
   deliveryMethod: DeliveryMethod;
-  address?: string | null;
+  deliveryAddress?: string | null;
   notes?: string | null;
   total: number;
 }
@@ -114,7 +114,7 @@ export class OrderModel {
       where: { id },
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true, address: true },
+          select: { id: true, name: true, email: true, phone: true, street: true, city: true },
         },
         items: {
           include: {
@@ -158,7 +158,7 @@ export class OrderModel {
       data: {
         userId: data.userId,
         deliveryMethod: data.deliveryMethod,
-        address: data.address,
+        deliveryAddress: data.deliveryAddress,
         notes: data.notes,
         total: data.total,
         status: OrderStatus.PENDING,
@@ -254,7 +254,7 @@ export class OrderModel {
       prisma.order.count({
         where: {
           createdAt: { gte: todayStart },
-          status: { in: [OrderStatus.DELIVERED, OrderStatus.PICKED_UP] },
+          status: { in: [OrderStatus.READY, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED, OrderStatus.PICKED_UP] },
         },
       }),
       prisma.order.count({
@@ -264,8 +264,7 @@ export class OrderModel {
             in: [
               OrderStatus.PENDING, 
               OrderStatus.CONFIRMED, 
-              OrderStatus.IN_PRODUCTION, 
-              OrderStatus.READY
+              OrderStatus.IN_PRODUCTION
             ] 
           },
         },

@@ -172,11 +172,11 @@ export default function DashboardPage() {
     if (isBaecker) {
       switch (currentStatus) {
         case OrderStatus.PENDING:
-          return [OrderStatus.CONFIRMED];
+          return [OrderStatus.CONFIRMED, OrderStatus.CANCELLED];
         case OrderStatus.CONFIRMED:
-          return [OrderStatus.IN_PRODUCTION];
+          return [OrderStatus.IN_PRODUCTION, OrderStatus.CANCELLED];
         case OrderStatus.IN_PRODUCTION:
-          return [OrderStatus.READY];
+          return [OrderStatus.READY, OrderStatus.CANCELLED];
         default:
           return [];
       }

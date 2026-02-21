@@ -90,6 +90,7 @@ export default function CartPage() {
                 <button
                   onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                   className="p-1 rounded-full hover:bg-gray-100"
+                  aria-label={`Menge von ${item.product.name} verringern`}
                 >
                   <Minus className="w-5 h-5" />
                 </button>
@@ -97,6 +98,7 @@ export default function CartPage() {
                 <button
                   onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                   className="p-1 rounded-full hover:bg-gray-100"
+                  aria-label={`Menge von ${item.product.name} erhöhen`}
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -113,6 +115,7 @@ export default function CartPage() {
               <button
                 onClick={() => removeItem(item.product.id)}
                 className="p-2 text-red-500 hover:bg-red-50 rounded-full"
+                aria-label={`${item.product.name} aus dem Warenkorb entfernen`}
               >
                 <Trash2 className="w-5 h-5" />
               </button>
@@ -126,6 +129,7 @@ export default function CartPage() {
               toast.info('Warenkorb geleert');
             }}
             className="text-red-500 hover:underline text-sm"
+            aria-label="Alle Artikel aus dem Warenkorb entfernen"
           >
             Warenkorb leeren
           </button>

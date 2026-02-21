@@ -109,13 +109,21 @@ const statusConfig: Record<OrderStatus, {
   },
 };
 
-// Status workflow order for progress display
-const statusOrder = [
-  OrderStatus.PENDING,
-  OrderStatus.CONFIRMED,
-  OrderStatus.IN_PRODUCTION,
-  OrderStatus.READY,
-];
+// Status workflow order for progress display - based on delivery method
+const getStatusOrder = (deliveryMethod: string) => {
+  const baseStatuses = [
+    OrderStatus.PENDING,
+    OrderStatus.CONFIRMED,
+    OrderStatus.IN_PRODUCTION,
+    OrderStatus.READY,
+  ];
+  
+  if (deliveryMethod === 'DELIVERY') {
+    return [...baseStatuses, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED];
+  }
+  // PICKUP
+  return [...baseStatuses, OrderStatus.PICKED_UP];
+};
 
 export default function StatusPage() {
   const router = useRouter();
@@ -166,14 +174,34 @@ export default function StatusPage() {
     fetchOrder();
   }, [fetchOrder]);
 
+  // Fallback: Auto-refresh via Fetch API every 30 seconds (als Backup für WebSocket)
+  useEffect(() => {
+    // Only poll for active orders
+    if (!order || order.status === OrderStatus.DELIVERED || 
+        order.status === OrderStatus.PICKED_UP || order.status === OrderStatus.CANCELLED) {
+      return;
+    }
+
+    const pollInterval = setInterval(() => {
+      fetchOrder();
+    }, 30000); // 30 Sekunden
+
+    return () => clearInterval(pollInterval);
+  }, [order?.status, fetchOrder]);
+
+  // Get status order based on delivery method
+  const statusOrder = order ? getStatusOrder(order.deliveryMethod) : [];
+
   // Get current status index for progress bar
   const getCurrentStatusIndex = () => {
     if (!order) return 0;
     if (order.status === OrderStatus.CANCELLED) return -1;
-    if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.PICKED_UP) {
-      return statusOrder.length;
+    const index = statusOrder.indexOf(order.status);
+    if (index === -1) {
+      // Final status (DELIVERED or PICKED_UP)
+      return statusOrder.length - 1;
     }
-    return statusOrder.indexOf(order.status);
+    return index;
   };
 
   if (isLoading) {

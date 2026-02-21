@@ -14,7 +14,12 @@
     "build": "npm run build --workspaces",
     "db:generate": "npm run db:generate --workspace=Backend",
     "db:migrate": "npm run db:migrate --workspace=Backend",
-    "db:seed": "npm run db:seed --workspace=Backend"
+    "db:seed": "npm run db:seed --workspace=Backend",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build",
+    "docker:logs": "docker compose logs -f",
+    "docker:seed": "docker compose exec backend npx tsx prisma/seed.ts"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

@@ -23,6 +23,7 @@ interface Product {
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') {
@@ -38,14 +39,16 @@ export default function MenuPage() {
 
   useEffect(() => {
     async function fetchProducts() {
+      setError(null);
       try {
         const endpoint = selectedCategory 
           ? `/api/products?category=${selectedCategory}`
           : '/api/products';
         const response = await apiGet<{ success: boolean; data: Product[] }>(endpoint);
         setProducts(response.data);
-      } catch (error) {
-        console.error('Fehler beim Laden der Produkte:', error);
+      } catch (err: any) {
+        setError(err.message || 'Fehler beim Laden der Produkte');
+        console.error('Fehler beim Laden der Produkte:', err);
       } finally {
         setIsLoading(false);
       }
@@ -103,7 +106,19 @@ export default function MenuPage() {
 
       {/* Alle Produkte */}
       <section>
-        {isLoading ? (
+        {error ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">😕</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Fehler beim Laden</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary"
+            >
+              Erneut versuchen
+            </button>
+          </div>
+        ) : isLoading ? (
           viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
@@ -137,6 +152,20 @@ export default function MenuPage() {
               ))}
             </div>
           )
+        ) : products.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🍽️</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Keine Produkte gefunden</h2>
+            <p className="text-gray-600 mb-6">In dieser Kategorie sind momentan keine Produkte verfügbar.</p>
+            {selectedCategory && (
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="btn-primary"
+              >
+                Alle Kategorien anzeigen
+              </button>
+            )}
+          </div>
         ) : viewMode === 'grid' ? (
           // Grid View
           Object.entries(groupedProducts).map(([categoryName, categoryProducts]) => (

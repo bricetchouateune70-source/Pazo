@@ -8,14 +8,16 @@ export interface UserCreateInput {
   name: string;
   role?: Role;
   phone?: string | null;
-  address?: string | null;
+  street?: string | null;
+  city?: string | null;
 }
 
 export interface UserUpdateInput {
   email?: string;
   name?: string;
   phone?: string | null;
-  address?: string | null;
+  street?: string | null;
+  city?: string | null;
   role?: Role;
   isActive?: boolean;
 }
@@ -30,7 +32,8 @@ export class UserModel {
         name: true,
         role: true,
         phone: true,
-        address: true,
+        street: true,
+        city: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -52,7 +55,8 @@ export class UserModel {
         name: true,
         role: true,
         phone: true,
-        address: true,
+        street: true,
+        city: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -76,7 +80,8 @@ export class UserModel {
         name: data.name,
         role: data.role || Role.KUNDE,
         phone: data.phone || null,
-        address: data.address || null,
+        street: data.street || null,
+        city: data.city || null,
       },
       select: {
         id: true,
@@ -84,7 +89,8 @@ export class UserModel {
         name: true,
         role: true,
         phone: true,
-        address: true,
+        street: true,
+        city: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -101,7 +107,8 @@ export class UserModel {
         ...(data.email !== undefined && { email: data.email.toLowerCase() }),
         ...(data.name !== undefined && { name: data.name }),
         ...(data.phone !== undefined && { phone: data.phone }),
-        ...(data.address !== undefined && { address: data.address }),
+        ...(data.street !== undefined && { street: data.street }),
+        ...(data.city !== undefined && { city: data.city }),
         ...(data.role !== undefined && { role: data.role }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
@@ -111,7 +118,8 @@ export class UserModel {
         name: true,
         role: true,
         phone: true,
-        address: true,
+        street: true,
+        city: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,

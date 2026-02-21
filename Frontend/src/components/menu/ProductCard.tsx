@@ -60,6 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             className="btn-primary flex items-center space-x-1 text-sm"
+            aria-label={`${product.name} zum Warenkorb hinzufügen`}
           >
             <Plus className="w-4 h-4" />
             <span>Hinzufügen</span>

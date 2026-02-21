@@ -15,6 +15,50 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - pazo-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: pazo-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://pazo:pazosecret@postgres:5432/pazo
+      - FRONTEND_URL=http://localhost:5001
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+      - SEED_DATABASE=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pazo-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Frontend/Dockerfile
+    container_name: pazo-frontend
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - pazo-network
+    restart: unless-stopped
+
+networks:
+  pazo-network:
+    driver: bridge
 
 volumes:
   postgres_data:

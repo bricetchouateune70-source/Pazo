@@ -19,4 +19,10 @@ router.post('/refresh', AuthController.refresh);
 // GET /api/auth/me
 router.get('/me', authenticate, AuthController.getMe);
 
+// PATCH /api/auth/profile - Profil aktualisieren
+router.patch('/profile', authenticate, AuthController.updateProfile);
+
+// PATCH /api/auth/password - Passwort ändern
+router.patch('/password', authenticate, AuthController.changePassword);
+
 export default router;

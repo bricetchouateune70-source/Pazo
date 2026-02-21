@@ -16,7 +16,8 @@ export function Navbar() {
   useEffect(() => {
     setMounted(true);
     fetchUser();
-  }, [fetchUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -44,11 +45,13 @@ export function Navbar() {
               Menü
             </Link>
             
-            <Link href="/status" className="text-gray-700 hover:text-secondary-500 font-medium">
-              Bestellstatus
-            </Link>
+            {!isStaff && (
+              <Link href="/status" className="text-gray-700 hover:text-secondary-500 font-medium">
+                Bestellstatus
+              </Link>
+            )}
             
-            {isAuthenticated && (
+            {isAuthenticated && !isStaff && (
               <Link href="/orders" className="text-gray-700 hover:text-secondary-500 font-medium">
                 Meine Bestellungen
               </Link>
@@ -70,10 +73,10 @@ export function Navbar() {
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Cart */}
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-secondary-500">
+            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-secondary-500" aria-label="Warenkorb">
               <ShoppingCart className="w-6 h-6" />
               {mounted && itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-secondary-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-secondary-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" aria-label={`${itemCount} Artikel im Warenkorb`}>
                   {itemCount}
                 </span>
               )}
@@ -87,6 +90,8 @@ export function Navbar() {
                     <button
                       onClick={() => setIsMenuOpen(!isMenuOpen)}
                       className="flex items-center space-x-2 p-2 text-gray-700 hover:text-secondary-500"
+                      aria-label="Benutzermenü öffnen"
+                      aria-expanded={isMenuOpen}
                     >
                       <User className="w-6 h-6" />
                       <span className="hidden md:inline font-medium">{user?.name}</span>
@@ -105,13 +110,15 @@ export function Navbar() {
                         >
                           Profil
                         </Link>
-                        <Link
-                          href="/orders"
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Bestellungen
-                        </Link>
+                        {!isStaff && (
+                          <Link
+                            href="/orders"
+                            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            Bestellungen
+                          </Link>
+                        )}
                         {isStaff && (
                           <Link
                             href="/dashboard"
@@ -143,6 +150,8 @@ export function Navbar() {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 text-gray-700"
+              aria-label={isMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -159,7 +168,16 @@ export function Navbar() {
             >
               Menü
             </Link>
-            {isAuthenticated && (
+            {!isStaff && (
+              <Link
+                href="/status"
+                className="block py-2 text-gray-700 hover:text-secondary-500"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Bestellstatus
+              </Link>
+            )}
+            {isAuthenticated && !isStaff && (
               <Link
                 href="/orders"
                 className="block py-2 text-gray-700 hover:text-secondary-500"
