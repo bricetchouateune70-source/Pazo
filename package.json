@@ -1,0 +1,22 @@
+{
+  "name": "pazo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "Backend",
+    "Frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev:backend": "npm run dev --workspace=Backend",
+    "dev:frontend": "npm run dev --workspace=Frontend",
+    "build": "npm run build --workspaces",
+    "db:generate": "npm run db:generate --workspace=Backend",
+    "db:migrate": "npm run db:migrate --workspace=Backend",
+    "db:seed": "npm run db:seed --workspace=Backend"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
